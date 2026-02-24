@@ -5,7 +5,14 @@ import { successResponse, errorResponse } from "../utils/response";
 
 export const signup = async (req: Request, res: Response) => {
   try {
-    const errors = validateSignup(req.body);
+    const normalizedBody = {
+      name: req.body.name?.trim(),
+      email: req.body.email?.trim().toLowerCase(),
+      password: req.body.password,
+      role: req.body.role?.trim()
+    };
+
+    const errors = validateSignup(normalizedBody);
 
     if (errors.length > 0) {
       return res.status(400).json(
@@ -13,7 +20,7 @@ export const signup = async (req: Request, res: Response) => {
       );
     }
 
-    const user = await registerUser(req.body);
+    const user = await registerUser(normalizedBody);
 
     return res.status(201).json(
       successResponse("User registered successfully", {
