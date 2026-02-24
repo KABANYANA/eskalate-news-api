@@ -32,11 +32,22 @@ export const create = async (req: AuthRequest, res: Response) => {
 };
 
 export const listMine = async (req: AuthRequest, res: Response) => {
-  const articles = await getMyArticles(req.user!.id);
+  try {
+    const includeDeleted = req.query.includeDeleted === "true";
 
-  return res.json(
-    successResponse("Articles retrieved", articles)
-  );
+    const articles = await getMyArticles(
+      req.user!.id,
+      includeDeleted
+    );
+
+    return res.json(
+      successResponse("Articles retrieved", articles)
+    );
+  } catch {
+    return res.status(500).json(
+      errorResponse("Internal server error", [])
+    );
+  }
 };
 
 export const update = async (req: AuthRequest, res: Response) => {

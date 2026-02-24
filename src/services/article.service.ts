@@ -15,10 +15,14 @@ export const createArticle = async (
   });
 };
 
-export const getMyArticles = async (authorId: string) => {
+export const getMyArticles = async (
+  authorId: string,
+  includeDeleted: boolean = false
+) => {
   return prisma.article.findMany({
     where: {
-      authorId
+      authorId,
+      ...(includeDeleted ? {} : { deletedAt: null })
     },
     orderBy: {
       createdAt: "desc"
