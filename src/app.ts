@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import authRoutes from "./routes/auth.routes";
 
 const app = express();
 
@@ -8,11 +9,13 @@ app.use(express.json());
 
 app.get("/health", (_req, res) => {
   return res.status(200).json({
-    success: true,
-    message: "API is running",
-    object: null,
-    errors: null
+    Success: true,
+    Message: "API is running",
+    Object: null,
+    Errors: null
   });
 });
+
+app.use("/api/auth", authRoutes);
 
 export default app;
