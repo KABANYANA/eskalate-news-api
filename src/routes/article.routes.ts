@@ -5,10 +5,19 @@ import {
   create,
   listMine,
   update,
-  remove
+  remove,
+  listPublic
 } from "../controllers/article.controller";
 
 const router = Router();
+
+
+//  Public route
+ 
+router.get("/", listPublic);
+
+
+//  Author protected routes
 
 router.use(authenticate, authorizeRole("author"));
 

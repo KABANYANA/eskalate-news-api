@@ -81,3 +81,67 @@ export const softDeleteArticle = async (
     }
   });
 };
+
+/**
+ * Public News Feed
+ */
+export const getPublicArticles = async (query: any) => {
+  const page = Math.max(parseInt(query.page) || 1, 1);
+  const size = Math.max(parseInt(query.size) || 10, 1);
+
+  const skip = (page - 1) * size;
+
+  const filters: any = {
+    status: "Published",
+    deletedAt: null
+  };
+
+  if (query.category) {
+    filters.category = query.category;
+  }
+
+  if (query.q) {
+    filters.title = {
+      contains: query.q,
+      mode: "insensitive"
+    };
+  }
+
+  if (query.author) {
+    filters.author = {
+      name: {
+        contains: query.author,
+        mode: "insensitive"
+      }
+    };
+  }
+
+  const [articles, total] = await Promise.all([
+    prisma.article.findMany({
+      where: filters,
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: "desc"
+      },
+      skip,
+      take: size
+    }),
+    prisma.article.count({
+      where: filters
+    })
+  ]);
+
+  return {
+    data: articles,
+    page,
+    size,
+    total
+  };
+};
