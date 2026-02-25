@@ -59,7 +59,8 @@ npm install
 
 Create a `.env` file:
 
-DATABASE_URL="postgresql://postgres:<password>@localhost:5432/escalate_news"
+DATABASE_URL="postgresql://postgres:@localhost:5432/escalate_news"
+
 JWT_SECRET="your_secret_key"
 
 ### 3️⃣ Run Database Migration
