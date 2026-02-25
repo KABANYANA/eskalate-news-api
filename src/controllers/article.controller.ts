@@ -5,18 +5,54 @@ import {
   getMyArticles,
   updateArticle,
   softDeleteArticle,
-  getPublicArticles
+  getPublicArticles,
+  getArticleById,
+  logRead,
+  extractReaderFromToken
 } from "../services/article.service";
 import { validateArticle } from "../validators/article.validator";
 import { successResponse, errorResponse } from "../utils/response";
 
 
-//  Create Article (Author Only)
+  // PUBLIC: Get Article By ID + Log Read
+ 
+export const getOne = async (req: any, res: Response) => {
+  try {
+    const article = await getArticleById(req.params.id);
 
+    if (!article) {
+      return res.status(404).json({
+        Success: false,
+        Message: "News article no longer available",
+        Object: null,
+        Errors: null
+      });
+    }
+
+    // Extract readerId (optional)
+    const readerId = extractReaderFromToken(
+      req.headers.authorization
+    );
+
+    // Non-blocking log
+    logRead(article.id, readerId).catch(() => {});
+
+    return res.json(
+      successResponse("Article retrieved", article)
+    );
+  } catch {
+    return res
+      .status(500)
+      .json(errorResponse("Internal server error", []));
+  }
+};
+
+
+//  CREATE
+ 
 export const create = async (req: AuthRequest, res: Response) => {
   try {
     const errors = validateArticle(req.body);
-
     if (errors.length > 0) {
       return res
         .status(400)
@@ -36,14 +72,11 @@ export const create = async (req: AuthRequest, res: Response) => {
 };
 
 
-  // List Author Articles
-  // Excludes soft-deleted by default
-  // ?includeDeleted=true to include them
+  // LIST MINE
  
 export const listMine = async (req: AuthRequest, res: Response) => {
   try {
     const includeDeleted = req.query.includeDeleted === "true";
-
     const articles = await getMyArticles(
       req.user!.id,
       includeDeleted
@@ -60,8 +93,8 @@ export const listMine = async (req: AuthRequest, res: Response) => {
 };
 
 
-  // Update Article (Ownership enforced)
-
+  // UPDATE
+ 
 export const update = async (req: AuthRequest, res: Response) => {
   try {
     const article = await updateArticle(
@@ -94,7 +127,8 @@ export const update = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Soft Delete Article
+
+//  DELETE
  
 export const remove = async (req: AuthRequest, res: Response) => {
   try {
@@ -125,12 +159,8 @@ export const remove = async (req: AuthRequest, res: Response) => {
 };
 
 
-//  Public News Feed
-//  - Published only
-//  - Not soft deleted
-//  - Supports filtering
-//  - Supports pagination
-
+//  PUBLIC FEED
+ 
 export const listPublic = async (req: any, res: Response) => {
   try {
     const result = await getPublicArticles(req.query);

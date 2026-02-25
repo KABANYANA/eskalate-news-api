@@ -6,19 +6,21 @@ import {
   listMine,
   update,
   remove,
-  listPublic
+  listPublic,
+  getOne
 } from "../controllers/article.controller";
 
 const router = Router();
 
 
-//  Public route
+  // Public routes
  
 router.get("/", listPublic);
+router.get("/:id", getOne);
 
 
-//  Author protected routes
-
+  // Author-only routes
+ 
 router.use(authenticate, authorizeRole("author"));
 
 router.post("/", create);
