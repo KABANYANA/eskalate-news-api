@@ -1,8 +1,11 @@
 import app from "./app";
 import dotenv from "dotenv";
-import "./queues/analytics.worker"; // start worker
 
 dotenv.config();
+
+if (process.env.NODE_ENV !== "test") {
+  require("./queues/analytics.worker");
+}
 
 const PORT = process.env.PORT || 3000;
 

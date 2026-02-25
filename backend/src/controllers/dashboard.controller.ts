@@ -1,8 +1,9 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import prisma from "../config/prisma";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
 export const getAuthorDashboard = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ) => {
   try {
@@ -17,21 +18,21 @@ export const getAuthorDashboard = async (
       prisma.article.findMany({
         where: {
           authorId: userId,
-          deletedAt: null
+          deletedAt: null,
         },
         skip,
         take: size,
         orderBy: { createdAt: "desc" },
         include: {
-          analytics: true
-        }
+          analytics: true,
+        },
       }),
       prisma.article.count({
         where: {
           authorId: userId,
-          deletedAt: null
-        }
-      })
+          deletedAt: null,
+        },
+      }),
     ]);
 
     const responseData = articles.map((article) => ({
@@ -40,7 +41,7 @@ export const getAuthorDashboard = async (
       totalViews: article.analytics.reduce(
         (sum, a) => sum + a.viewCount,
         0
-      )
+      ),
     }));
 
     return res.json({
@@ -50,14 +51,14 @@ export const getAuthorDashboard = async (
       PageNumber: page,
       PageSize: size,
       TotalSize: total,
-      Errors: null
+      Errors: null,
     });
   } catch (error) {
     return res.status(500).json({
       Success: false,
       Message: "Failed to retrieve dashboard",
       Object: null,
-      Errors: ["Internal server error"]
+      Errors: ["Internal server error"],
     });
   }
 };
